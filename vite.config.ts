@@ -28,7 +28,6 @@ export default defineConfig({
         orientation: "portrait",
         scope: "/",
         start_url: "/",
-
         icons: [
           {
             src: "/icons/icon-72x72.png",
@@ -92,7 +91,7 @@ export default defineConfig({
         runtimeCaching: [
           // 🔹 Supabase REST API → NetworkFirst (temps réel)
           {
-            urlPattern: ({ url }) =>
+            urlPattern: ({ url }: { url: URL }) =>
               url.hostname.includes("supabase.co") &&
               (url.pathname.startsWith("/rest/") ||
                 url.pathname.startsWith("/auth/")),
@@ -112,7 +111,7 @@ export default defineConfig({
 
           // 🔹 Supabase Realtime → jamais en cache
           {
-            urlPattern: ({ url }) =>
+            urlPattern: ({ url }: { url: URL }) =>
               url.hostname.includes("supabase.co") &&
               url.pathname.startsWith("/realtime/"),
             handler: "NetworkOnly",

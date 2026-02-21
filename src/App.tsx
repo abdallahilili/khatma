@@ -7,12 +7,20 @@ import { Toaster } from 'react-hot-toast';
 import InstallModal from './components/InstallModal';
 import { usePWAInstall } from './hooks/usePWAInstall';
 import { useState } from 'react';
+import { useDeviceDetect } from "./hooks/useDeviceDetect";
+import InstallIOSModal from "./components/InstallIOSModal";
+
 
 function App() {
    const { isInstallable, installApp } = usePWAInstall();
   const [showModal, setShowModal] = useState(true);
+  const { isIOS, isStandalone } = useDeviceDetect();
+
   return (
      <> 
+     {
+  isIOS && !isStandalone && <InstallIOSModal onClose={() => setShowModal(false)} />
+}
      {isInstallable && showModal && (
         <InstallModal
           onInstall={() => {
