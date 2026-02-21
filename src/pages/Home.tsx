@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, BookOpen, Loader2, Users, Sparkles, X } from 'lucide-react';
+import { Search, Plus, Loader2, Users, Sparkles, X } from 'lucide-react';
 import { useGroups, findOrCreateGroup } from '../hooks/useGroups';
 import { GroupCard } from '../components/GroupCard';
 import toast from 'react-hot-toast';
@@ -51,11 +51,11 @@ export function Home() {
     <div className="max-w-2xl mx-auto px-4 py-10 animate-fade-in">
       {/* عنوان رئيسي */}
       <div className="text-center mb-10">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-600 rounded-3xl shadow-2xl shadow-emerald-200 mb-6">
-          <BookOpen className="text-white" size={40} />
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-white-900 rounded-3xl shadow-2xl shadow-emerald-200 mb-6">
+            <img src="/icons/icon-128x128.png" alt="logo" className="w-10 h-10 rounded-2xl" />
         </div>
         <h1 className="text-4xl font-black text-slate-800 mb-2">
-          ختمة<span className="text-emerald-600">جماعية</span>
+           ختمت<span className="text-emerald-600">نا</span>
         </h1>
         <p className="text-slate-500 text-lg font-medium">
           انضم إلى مجموعة أو أنشئ جديدة لبدء قراءة جماعية.

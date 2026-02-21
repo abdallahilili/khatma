@@ -29,8 +29,10 @@ function App() {
         <nav className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-100 group-hover:rotate-12 transition-transform duration-300">
-                <span className="text-white font-black text-xl">خ</span>
+              <div className="w-10 h-10 bg-white-600 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-100 group-hover:rotate-12 transition-transform duration-300">
+            {/* logo */}
+            <img src="/icons/icon-128x128.png" alt="logo" className="w-10 h-10 rounded-2xl" />
+
               </div>
               <span className="font-black text-slate-800 tracking-tight text-xl">
        ختمت<span className="text-emerald-600">نا</span>
