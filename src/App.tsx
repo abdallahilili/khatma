@@ -4,9 +4,25 @@ import { GroupPage } from './pages/GroupPage';
 import { CreateKhatma } from './pages/CreateKhatma';
 import { KhatmaDetail } from './pages/KhatmaDetail';
 import { Toaster } from 'react-hot-toast';
+import InstallModal from './components/InstallModal';
+import { usePWAInstall } from './hooks/usePWAInstall';
+import { useState } from 'react';
 
 function App() {
+   const { isInstallable, installApp } = usePWAInstall();
+  const [showModal, setShowModal] = useState(true);
   return (
+     <> 
+     {isInstallable && showModal && (
+        <InstallModal
+          onInstall={() => {
+            installApp();
+            setShowModal(false);
+          }}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+
     <Router>
       <div className="min-h-screen bg-[#f8fafc]" dir="rtl">
         {/* شريط التنقل العلوي */}
@@ -60,6 +76,7 @@ function App() {
         />
       </div>
     </Router>
+    </>
   );
 }
 
