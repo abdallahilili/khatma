@@ -305,7 +305,7 @@ export function KhatmaDetail() {
                     ) : (
                       <CheckCircle2 size={12} />
                     )}
-                    <span className="hidden sm:inline">تم</span>
+                    <span>تم</span>
                   </button>
                   <div className="flex-1 min-w-0 text-right group/assign">
                     {editingAssignmentId === assignment.id ? (
@@ -324,7 +324,8 @@ export function KhatmaDetail() {
                     ) : (
                       <>
                         <div className="flex items-center gap-1 justify-end">
-                          <div className="flex items-center gap-1 opacity-0 group-hover/assign:opacity-100 transition-opacity">
+                          <p className="font-bold text-slate-700 text-sm truncate" dir="rtl">{assignment.participant_name}</p>
+                          <div className="flex items-center gap-1 opacity-10 sm:opacity-0 group-hover/assign:opacity-100 transition-opacity">
                             <button
                               onClick={() => {
                                 setEditingAssignmentId(assignment.id);
@@ -341,7 +342,6 @@ export function KhatmaDetail() {
                               <Trash2 size={12} />
                             </button>
                           </div>
-                          <p className="font-bold text-slate-700 text-sm truncate">{assignment.participant_name}</p>
                         </div>
                         <span className="text-[10px] font-black text-rose-400 uppercase tracking-wide">قيد القراءة</span>
                       </>
@@ -372,7 +372,7 @@ export function KhatmaDetail() {
                     ) : (
                       <ToggleRight size={12} />
                     )}
-                    <span className="hidden sm:inline">إعادة</span>
+                    <span>إعادة</span>
                   </button>
                   <div className="flex-1 min-w-0 text-right group/assign">
                     {editingAssignmentId === assignment.id ? (
@@ -391,7 +391,8 @@ export function KhatmaDetail() {
                     ) : (
                       <>
                         <div className="flex items-center gap-1 justify-end">
-                          <div className="flex items-center gap-1 opacity-0 group-hover/assign:opacity-100 transition-opacity">
+                          <p className="font-bold text-slate-500 text-sm truncate" dir="rtl">{assignment.participant_name}</p>
+                          <div className="flex items-center gap-1 opacity-10 sm:opacity-0 group-hover/assign:opacity-100 transition-opacity">
                             <button
                               onClick={() => {
                                 setEditingAssignmentId(assignment.id);
@@ -408,7 +409,6 @@ export function KhatmaDetail() {
                               <Trash2 size={12} />
                             </button>
                           </div>
-                          <p className="font-bold text-slate-500 text-sm truncate">{assignment.participant_name}</p>
                         </div>
                         <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wide">✓ مكتمل</span>
                       </>

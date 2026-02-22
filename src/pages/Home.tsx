@@ -175,7 +175,7 @@ export function Home() {
       {/* تذييل الصفحة */}
       <footer className="mt-16 text-center">
         <p className="text-slate-400 text-sm font-medium">
-          تطوير بواسطة <span className="text-emerald-600 font-bold">عبد الله الليلي</span>
+          طوره <span className="text-emerald-600 font-bold">عبد الله الليلي</span>
         </p>
       </footer>
     </div>
