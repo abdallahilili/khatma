@@ -66,3 +66,19 @@ export function useJuzAssignments(khatmaId: string | undefined) {
 
   return { khatma, assignments, loading, error, refresh: fetchData };
 }
+
+export async function updateAssignment(id: string, updates: Partial<JuzAssignment>) {
+  const { error } = await supabase
+    .from('juz_assignment')
+    .update(updates)
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteAssignment(id: string) {
+  const { error } = await supabase
+    .from('juz_assignment')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}

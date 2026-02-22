@@ -62,3 +62,19 @@ export function useKhatmasByGroup(groupId: string | undefined) {
 
   return { khatmas, groupName, loading, error, refresh: fetchKhatmas };
 }
+
+export async function updateKhatma(id: string, name: string) {
+  const { error } = await supabase
+    .from('khatma')
+    .update({ name: name.trim() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteKhatma(id: string) {
+  const { error } = await supabase
+    .from('khatma')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}

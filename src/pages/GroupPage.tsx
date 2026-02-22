@@ -1,13 +1,71 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, Plus, BookOpen, Loader2, ChevronLeft, Calendar, Hash, CheckCircle2, Award } from 'lucide-react';
-import { useKhatmasByGroup } from '../hooks/useKhatmasByGroup';
+import { ArrowRight, Plus, BookOpen, Loader2, ChevronLeft, Calendar, Hash, CheckCircle2, Award, Pencil, Trash2, X, Check } from 'lucide-react';
+import { useKhatmasByGroup, deleteKhatma, updateKhatma } from '../hooks/useKhatmasByGroup';
+import { deleteGroup, updateGroup } from '../hooks/useGroups';
 import { ProgressBar } from '../components/ProgressBar';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { useState } from 'react';
 
 export function GroupPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { khatmas, groupName, loading, error } = useKhatmasByGroup(id);
+  const { khatmas, groupName, loading, error, refresh } = useKhatmasByGroup(id);
+
+  const [isEditingGroup, setIsEditingGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [isDeletingGroup, setIsDeletingGroup] = useState(false);
+  const [editingKhatmaId, setEditingKhatmaId] = useState<string | null>(null);
+  const [newKhatmaName, setNewKhatmaName] = useState('');
+
+  const handleUpdateGroup = async () => {
+    if (!id || !newGroupName.trim()) return;
+    try {
+      await updateGroup(id, newGroupName);
+      toast.success('تم تحديث اسم المجموعة');
+      setIsEditingGroup(false);
+      refresh();
+    } catch (err: any) {
+      toast.error('خطأ في التحديث');
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!id || !window.confirm('هل أنت متأكد من حذف هذه المجموعة وكل ما فيها؟')) return;
+    try {
+      setIsDeletingGroup(true);
+      await deleteGroup(id);
+      toast.success('تم حذف المجموعة');
+      navigate('/');
+    } catch (err: any) {
+      toast.error('خطأ في الحذف');
+      setIsDeletingGroup(false);
+    }
+  };
+
+  const handleUpdateKhatma = async (khatmaId: string) => {
+    if (!newKhatmaName.trim()) return;
+    try {
+      await updateKhatma(khatmaId, newKhatmaName);
+      toast.success('تم تحديث اسم الختمة');
+      setEditingKhatmaId(null);
+      refresh();
+    } catch (err: any) {
+      toast.error('خطأ في التحديث');
+    }
+  };
+
+  const handleDeleteKhatma = async (e: React.MouseEvent, khatmaId: string, name: string) => {
+    e.stopPropagation();
+    if (!window.confirm(`هل أنت متأكد من حذف الختمة "${name}"؟`)) return;
+    try {
+      await deleteKhatma(khatmaId);
+      toast.success('تم حذف الختمة');
+      refresh();
+    } catch (err: any) {
+      toast.error('خطأ في الحذف');
+    }
+  };
 
   if (loading) {
     return (
@@ -51,10 +109,57 @@ export function GroupPage() {
         </button>
 
         <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-1">مجموعة</p>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-800 truncate">{groupName}</h1>
-            <p className="text-slate-400 font-medium mt-1 text-sm">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-1 text-right">مجموعة</p>
+            {isEditingGroup ? (
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  onClick={handleUpdateGroup}
+                  className="p-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                >
+                  <Check size={16} />
+                </button>
+                <button
+                  onClick={() => setIsEditingGroup(false)}
+                  className="p-2 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+                <input
+                  type="text"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUpdateGroup()}
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none text-right font-bold text-lg"
+                  autoFocus
+                />
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 group/title justify-end">
+                <div className="flex items-center gap-1 opacity-0 group-hover/title:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => {
+                      setNewGroupName(groupName);
+                      setIsEditingGroup(true);
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors"
+                    title="تعديل"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    onClick={handleDeleteGroup}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors"
+                    title="حذف"
+                    disabled={isDeletingGroup}
+                  >
+                    {isDeletingGroup ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  </button>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-800 truncate text-right">{groupName}</h1>
+              </div>
+            )}
+            <p className="text-slate-400 font-medium mt-1 text-sm text-right">
               {khatmas.length} ختمة{khatmas.length !== 1 ? '' : ''}
               {completedCount > 0 && (
                 <span className="mr-2 text-emerald-600">
@@ -138,7 +243,42 @@ export function GroupPage() {
                   {/* وسط: تفاصيل */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-row-reverse justify-end">
-                      <p className="font-bold text-slate-800 text-sm truncate">{khatma.name}</p>
+                      {editingKhatmaId === khatma.id ? (
+                        <div className="flex items-center gap-1 flex-row-reverse" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="text"
+                            value={newKhatmaName}
+                            onChange={(e) => setNewKhatmaName(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleUpdateKhatma(khatma.id)}
+                            className="w-full px-2 py-0.5 rounded border border-emerald-200 text-right text-sm"
+                            autoFocus
+                          />
+                          <button onClick={() => handleUpdateKhatma(khatma.id)} className="text-emerald-600"><Check size={14}/></button>
+                          <button onClick={() => setEditingKhatmaId(null)} className="text-slate-400"><X size={14}/></button>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="font-bold text-slate-800 text-sm truncate">{khatma.name}</p>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingKhatmaId(khatma.id);
+                                setNewKhatmaName(khatma.name);
+                              }}
+                              className="p-1 text-slate-400 hover:text-emerald-600"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                            <button
+                              onClick={(e) => handleDeleteKhatma(e, khatma.id, khatma.name)}
+                              className="p-1 text-slate-400 hover:text-rose-600"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </>
+                      )}
                       {isCompleted && (
                         <span className="flex-shrink-0 text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
                           مكتملة

@@ -46,3 +46,19 @@ export async function findOrCreateGroup(groupName: string): Promise<string> {
   if (error) throw new Error(error.message);
   return data as string;
 }
+
+export async function updateGroup(id: string, name: string) {
+  const { error } = await supabase
+    .from('khatma_group')
+    .update({ name: name.trim() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteGroup(id: string) {
+  const { error } = await supabase
+    .from('khatma_group')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}

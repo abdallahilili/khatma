@@ -10,8 +10,13 @@ import {
   ToggleRight,
   ListChecks,
   X,
+  Pencil,
+  Trash2,
+  Check,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { updateKhatma, deleteKhatma } from '../hooks/useKhatmasByGroup';
+import { updateAssignment, deleteAssignment } from '../hooks/useJuzAssignments';
 import toast from 'react-hot-toast';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,6 +33,56 @@ export function KhatmaDetail() {
   const [participantName, setParticipantName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [isEditingKhatma, setIsEditingKhatma] = useState(false);
+  const [newKhatmaName, setNewKhatmaName] = useState('');
+  const [editingAssignmentId, setEditingAssignmentId] = useState<string | null>(null);
+  const [newParticipantName, setNewParticipantName] = useState('');
+
+  const handleUpdateKhatma = async () => {
+    if (!id || !newKhatmaName.trim()) return;
+    try {
+      await updateKhatma(id, newKhatmaName);
+      toast.success('تم تحديث اسم الختمة');
+      setIsEditingKhatma(false);
+      refresh();
+    } catch (err: any) {
+      toast.error('خطأ في التحديث');
+    }
+  };
+
+  const handleDeleteKhatma = async () => {
+    if (!id || !window.confirm('هل أنت متأكد من حذف هذه الختمة؟')) return;
+    try {
+      await deleteKhatma(id);
+      toast.success('تم حذف الختمة');
+      navigate(-1);
+    } catch (err: any) {
+      toast.error('خطأ في الحذف');
+    }
+  };
+
+  const handleUpdateAssignmentName = async (assignmentId: string) => {
+    if (!newParticipantName.trim()) return;
+    try {
+      await updateAssignment(assignmentId, { participant_name: newParticipantName.trim() });
+      toast.success('تم تحديث الاسم');
+      setEditingAssignmentId(null);
+      refresh();
+    } catch (err: any) {
+      toast.error('خطأ في التحديث');
+    }
+  };
+
+  const handleDeleteAssignment = async (assignmentId: string, juzNumber: number) => {
+    if (!window.confirm(`هل أنت متأكد من إلغاء حجز الجزء ${juzNumber}؟`)) return;
+    try {
+      await deleteAssignment(assignmentId);
+      toast.success('تم إلغاء الحجز');
+      refresh();
+    } catch (err: any) {
+      toast.error('خطأ في الإلغاء');
+    }
+  };
 
   const toggleJuz = (number: number) => {
     const isTaken = assignments.some(a => a.juz_number === number);
@@ -136,8 +191,42 @@ export function KhatmaDetail() {
           <ArrowRight size={18} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-800 truncate">{khatma.name}</h1>
-          <p className="text-slate-400 text-xs font-medium">
+          {isEditingKhatma ? (
+            <div className="flex items-center gap-2">
+              <button onClick={handleUpdateKhatma} className="text-emerald-600"><Check size={20}/></button>
+              <button onClick={() => setIsEditingKhatma(false)} className="text-slate-400"><X size={20}/></button>
+              <input
+                type="text"
+                value={newKhatmaName}
+                onChange={(e) => setNewKhatmaName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleUpdateKhatma()}
+                className="flex-1 bg-transparent border-b-2 border-emerald-500 outline-none text-xl sm:text-2xl font-black text-slate-800 text-right"
+                autoFocus
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 group/title justify-end">
+              <div className="flex items-center gap-1 opacity-0 group-hover/title:opacity-100 transition-opacity">
+                <button
+                  onClick={() => {
+                    setNewKhatmaName(khatma.name);
+                    setIsEditingKhatma(true);
+                  }}
+                  className="p-1 text-slate-400 hover:text-emerald-600"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
+                  onClick={handleDeleteKhatma}
+                  className="p-1 text-slate-400 hover:text-rose-600"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-800 truncate">{khatma.name}</h1>
+            </div>
+          )}
+          <p className="text-slate-400 text-xs font-medium text-right">
             بدأت في{' '}
             {new Date(khatma.start_date).toLocaleDateString('ar-DZ', {
               day: 'numeric',
@@ -218,9 +307,45 @@ export function KhatmaDetail() {
                     )}
                     <span className="hidden sm:inline">تم</span>
                   </button>
-                  <div className="flex-1 min-w-0 text-right">
-                    <p className="font-bold text-slate-700 text-sm truncate">{assignment.participant_name}</p>
-                    <span className="text-[10px] font-black text-rose-400 uppercase tracking-wide">قيد القراءة</span>
+                  <div className="flex-1 min-w-0 text-right group/assign">
+                    {editingAssignmentId === assignment.id ? (
+                      <div className="flex items-center gap-1 justify-end">
+                        <input
+                          type="text"
+                          value={newParticipantName}
+                          onChange={(e) => setNewParticipantName(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleUpdateAssignmentName(assignment.id)}
+                          className="w-24 px-2 py-0.5 rounded border border-emerald-200 text-right text-xs"
+                          autoFocus
+                        />
+                        <button onClick={() => handleUpdateAssignmentName(assignment.id)} className="text-emerald-600"><Check size={12}/></button>
+                        <button onClick={() => setEditingAssignmentId(null)} className="text-slate-400"><X size={12}/></button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-1 justify-end">
+                          <div className="flex items-center gap-1 opacity-0 group-hover/assign:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => {
+                                setEditingAssignmentId(assignment.id);
+                                setNewParticipantName(assignment.participant_name);
+                              }}
+                              className="p-1 text-slate-400 hover:text-emerald-600"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAssignment(assignment.id, assignment.juz_number)}
+                              className="p-1 text-slate-400 hover:text-rose-600"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                          <p className="font-bold text-slate-700 text-sm truncate">{assignment.participant_name}</p>
+                        </div>
+                        <span className="text-[10px] font-black text-rose-400 uppercase tracking-wide">قيد القراءة</span>
+                      </>
+                    )}
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-rose-50 border-2 border-rose-100 flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-black text-rose-600">{assignment.juz_number}</span>
@@ -249,9 +374,45 @@ export function KhatmaDetail() {
                     )}
                     <span className="hidden sm:inline">إعادة</span>
                   </button>
-                  <div className="flex-1 min-w-0 text-right">
-                    <p className="font-bold text-slate-500 text-sm truncate">{assignment.participant_name}</p>
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wide">✓ مكتمل</span>
+                  <div className="flex-1 min-w-0 text-right group/assign">
+                    {editingAssignmentId === assignment.id ? (
+                      <div className="flex items-center gap-1 justify-end">
+                        <input
+                          type="text"
+                          value={newParticipantName}
+                          onChange={(e) => setNewParticipantName(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleUpdateAssignmentName(assignment.id)}
+                          className="w-24 px-2 py-0.5 rounded border border-emerald-200 text-right text-xs"
+                          autoFocus
+                        />
+                        <button onClick={() => handleUpdateAssignmentName(assignment.id)} className="text-emerald-600"><Check size={12}/></button>
+                        <button onClick={() => setEditingAssignmentId(null)} className="text-slate-400"><X size={12}/></button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-1 justify-end">
+                          <div className="flex items-center gap-1 opacity-0 group-hover/assign:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => {
+                                setEditingAssignmentId(assignment.id);
+                                setNewParticipantName(assignment.participant_name);
+                              }}
+                              className="p-1 text-slate-400 hover:text-emerald-600"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAssignment(assignment.id, assignment.juz_number)}
+                              className="p-1 text-slate-400 hover:text-rose-600"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                          <p className="font-bold text-slate-500 text-sm truncate">{assignment.participant_name}</p>
+                        </div>
+                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wide">✓ مكتمل</span>
+                      </>
+                    )}
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-black text-slate-400">{assignment.juz_number}</span>
