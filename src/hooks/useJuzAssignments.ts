@@ -8,9 +8,10 @@ export function useJuzAssignments(khatmaId: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isInitial = false) => {
     if (!khatmaId) return;
     try {
+      if (isInitial) setLoading(true);
       // Fetch khatma details
       const { data: khatmaData, error: khatmaError } = await supabase
         .from('khatma')
@@ -39,7 +40,7 @@ export function useJuzAssignments(khatmaId: string | undefined) {
   }, [khatmaId]);
 
   useEffect(() => {
-    fetchData();
+    fetchData(true);
 
     if (!khatmaId) return;
 
@@ -54,7 +55,7 @@ export function useJuzAssignments(khatmaId: string | undefined) {
           filter: `khatma_id=eq.${khatmaId}`,
         },
         () => {
-          fetchData();
+          fetchData(false);
         }
       )
       .subscribe();

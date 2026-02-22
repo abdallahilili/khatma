@@ -8,10 +8,10 @@ export function useKhatmasByGroup(groupId: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchKhatmas = useCallback(async () => {
+  const fetchKhatmas = useCallback(async (isInitial = false) => {
     if (!groupId) return;
     try {
-      setLoading(true);
+      if (isInitial) setLoading(true);
       setError(null);
 
       // Fetch group name
@@ -41,17 +41,17 @@ export function useKhatmasByGroup(groupId: string | undefined) {
   }, [groupId]);
 
   useEffect(() => {
-    fetchKhatmas();
+    fetchKhatmas(true);
 
     if (!groupId) return;
 
     const subscription = supabase
       .channel(`group_khatmas_${groupId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'juz_assignment' }, () => {
-        fetchKhatmas();
+        fetchKhatmas(false);
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'khatma' }, () => {
-        fetchKhatmas();
+        fetchKhatmas(false);
       })
       .subscribe();
 
