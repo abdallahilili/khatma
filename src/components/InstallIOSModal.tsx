@@ -85,7 +85,7 @@ export default function InstallIOSModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Contenu avec direction conditionnelle */}
-        <div dir={activeLang === 'ar' ? 'rtl' : 'ltr'}>
+        <div dir="rtl">
           <h2 className="text-xl font-bold mb-3 text-emerald-700">
             {t.title}
           </h2>
